@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  passwordHash     String
+  role             String   @default("agent")
+  chatwootUserId   Int?
+  createdAt        DateTime @default(now())
+  leads            Lead[]
+  notes            Note[]
+
+  @@map("users")
+}
+
+model Pipeline {
+  id          String         @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime       @default(now())
+  stages      Stage[]
+  leads       PipelineLead[]
+  automations Automation[]
+
+  @@map("pipelines")
+}
+
+model Stage {
+  id          String         @id @default(uuid())
+  pipelineId  String
+  name        String
+  sortOrder   Int
+  createdAt   DateTime       @default(now())
+  pipeline    Pipeline       @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  leads       PipelineLead[]
+  automations Automation[]
+
+  @@map("stages")
+}
+
+model Lead {
+  id                     String           @id @default(uuid())
+  chatwootConversationId Int?             @unique
+  chatwootContactId      Int?
+  chatwootAccountId      Int?
+  name                   String?
+  phoneNumber            String?
+  channel                String?
+  assignedUserId         String?
+  status                 String           @default("open")
+  tags                   String[]
+  customAttributes       Json             @default("{}")
+  lastMessagePreview     String?
+  lastInteractionAt      DateTime?
+  createdAt              DateTime         @default(now())
+  assignedUser           User?            @relation(fields: [assignedUserId], references: [id])
+  pipelineLeads          PipelineLead[]
+  notes                  Note[]
+  aiSummary              LeadAiSummary?
+
+  @@map("leads")
+}
+
+model PipelineLead {
+  id         String   @id @default(uuid())
+  leadId     String
+  pipelineId String
+  stageId    String
+  movedAt    DateTime @default(now())
+  lead       Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  pipeline   Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  stage      Stage    @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@unique([leadId, pipelineId])
+  @@map("pipeline_leads")
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  leadId    String
+  content   String
+  createdBy String?
+  createdAt DateTime @default(now())
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  author    User?    @relation(fields: [createdBy], references: [id])
+
+  @@map("notes")
+}
+
+model LeadAiSummary {
+  id                    String   @id @default(uuid())
+  leadId                String   @unique
+  interest              String?
+  objections            String?
+  funnelStage           String?
+  temperature           String?
+  conversionProbability Int?
+  shortSummary          String?
+  lastUpdatedAt         DateTime @default(now())
+  lead                  Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@map("lead_ai_summaries")
+}
+
+model Automation {
+  id            String   @id @default(uuid())
+  pipelineId    String
+  stageId       String?
+  triggerType   String
+  triggerConfig Json?
+  actions       Json
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  pipeline      Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  stage         Stage?   @relation(fields: [stageId], references: [id])
+
+  @@map("automation_rules")
+}
