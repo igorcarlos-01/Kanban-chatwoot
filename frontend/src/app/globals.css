@@ -2,12 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #F0F4F8;
+  --foreground: #1a202c;
+  --brand: #00BFA6;
+  --brand-light: #E0FBF5;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Drag States */
+.dragging {
+  opacity: 0.5;
+  transform: rotate(2deg);
+}
+
+.drop-target {
+  background: var(--brand-light) !important;
+  border-color: var(--brand) !important;
+}
+
+/* Smooth transitions */
+.transition-smooth {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* KPI Card Gradient */
+.kpi-gradient {
+  background: linear-gradient(135deg, #00BFA6 0%, #00897B 100%);
+}
+
+/* Bar chart animation */
+@keyframes barGrow {
+  from { height: 0; }
+  to { height: var(--bar-height); }
+}
+
+.bar-animate {
+  animation: barGrow 0.6s ease-out forwards;
+}
+
+/* Tab active indicator */
+.tab-active {
+  position: relative;
+}
+
+.tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--brand);
+  border-radius: 3px 3px 0 0;
 }
