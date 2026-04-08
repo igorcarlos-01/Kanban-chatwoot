@@ -7,6 +7,7 @@ type Lead = {
   name: string;
   stageId: string;
   phoneNumber?: string;
+  channel?: string;
   lastMessagePreview: string;
   aiSummary?: { shortSummary: string; temperature: string };
   avatarUrl?: string;
@@ -49,6 +50,9 @@ export default function LeadCard({ lead, onDragStart }: LeadCardProps) {
   const colorIndex = (lead.name || "A").charCodeAt(0) % AVATAR_COLORS.length;
   const timeLabel = getTimeInStage(lead.movedAt);
 
+  // Lógica para definir o responsável
+  const responsible = lead.chatwootConversationId ? (lead.tags?.includes('atendimento_humano') ? "Equipe Humana" : "Agente Virtual") : "Não atribuído";
+
   return (
     <div
       draggable
@@ -61,10 +65,10 @@ export default function LeadCard({ lead, onDragStart }: LeadCardProps) {
           <img
             src={lead.avatarUrl}
             alt={lead.name}
-            className="w-9 h-9 rounded-full object-cover border border-gray-200 flex-shrink-0"
+            className="w-8 h-8 rounded-full object-cover border border-gray-200 flex-shrink-0"
           />
         ) : (
-          <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${AVATAR_COLORS[colorIndex]} text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0`}>
+          <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${AVATAR_COLORS[colorIndex]} text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0`}>
             {getInitials(lead.name || "NN")}
           </div>
         )}
@@ -74,34 +78,26 @@ export default function LeadCard({ lead, onDragStart }: LeadCardProps) {
             <h4 className="font-semibold text-[13px] text-gray-800 truncate leading-tight">
               {lead.name || "Sem Nome"}
             </h4>
-            {/* Temperature dot */}
-            {lead.aiSummary?.temperature === "hot" && (
-              <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" title="Quente 🔥" />
-            )}
-            {lead.aiSummary?.temperature === "warm" && (
-              <span className="w-2 h-2 rounded-full bg-yellow-400 flex-shrink-0" title="Morno ⚡" />
-            )}
+            <span className="text-[9px] uppercase font-bold text-gray-400">{lead.channel || 'web'}</span>
           </div>
-          {lead.phoneNumber && (
-            <p className="text-[11px] text-gray-400 truncate leading-tight">{lead.phoneNumber}</p>
-          )}
+          <div className="flex items-center gap-1 mt-0.5">
+            <div className={`w-1.5 h-1.5 rounded-full ${responsible === "Agente Virtual" ? "bg-purple-400" : "bg-blue-400"}`} />
+            <p className="text-[10px] text-gray-500 font-medium">{responsible}</p>
+          </div>
         </div>
       </div>
 
       {/* Time + Tags Row */}
-      <div className="mt-2 flex items-center justify-between gap-2">
+      <div className="mt-2.5 flex items-center justify-between gap-2">
         <div className="flex items-center gap-1 flex-wrap min-w-0">
           {lead.tags && lead.tags.slice(0, 2).map((tag) => (
             <span
               key={tag}
-              className="text-[9px] bg-brand-50 text-brand-700 px-1.5 py-px rounded font-medium border border-brand-100 truncate max-w-[80px]"
+              className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-px rounded font-medium border border-gray-200 truncate max-w-[80px]"
             >
               {tag}
             </span>
           ))}
-          {lead.tags && lead.tags.length > 2 && (
-            <span className="text-[9px] text-gray-400">+{lead.tags.length - 2}</span>
-          )}
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -109,7 +105,6 @@ export default function LeadCard({ lead, onDragStart }: LeadCardProps) {
             <span className="text-[10px] text-gray-400">{timeLabel}</span>
           )}
 
-          {/* Chatwoot link — visible on hover */}
           {lead.chatwootConversationId && (
             <a
               href={`https://chatwoot.centraltizze.com/app/accounts/1/conversations/${lead.chatwootConversationId}`}
@@ -126,15 +121,6 @@ export default function LeadCard({ lead, onDragStart }: LeadCardProps) {
           )}
         </div>
       </div>
-
-      {/* AI Summary — collapsed, expands on hover */}
-      {lead.aiSummary?.shortSummary && (
-        <div className="mt-2 max-h-0 group-hover:max-h-16 overflow-hidden transition-all duration-300 ease-in-out">
-          <p className="text-[10px] text-gray-400 bg-gray-50 rounded px-2 py-1 leading-relaxed">
-            🤖 {lead.aiSummary.shortSummary}
-          </p>
-        </div>
-      )}
     </div>
   );
 }

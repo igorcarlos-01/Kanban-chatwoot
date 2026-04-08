@@ -11,6 +11,7 @@ type Lead = {
   name: string;
   stageId: string;
   phoneNumber?: string;
+  channel?: string;
   lastMessagePreview: string;
   aiSummary?: { shortSummary: string; temperature: string };
   avatarUrl?: string;
@@ -25,7 +26,7 @@ type Stage = {
   color: string;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000").replace(/\/api$/, "");
 
 export default function KanbanBoard() {
   const [stages, setStages] = useState<Stage[]>([]);
